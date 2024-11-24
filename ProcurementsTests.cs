@@ -118,9 +118,44 @@ namespace Tests
                 // Assert
                 ProcurementsAreEqual(expected, real);
             }
+        }        
+        
+        [TestMethod]
+        public async Task GetProcurementsManyCalculationQueue_ReturnsSameAsProcurementsQueue()
+        {
+            // Act
+            var expected = DatabaseLibrary.Queries.GET.View.ProcurementsQueue();
+            var real = await DatabaseLibrary.Controllers.GET.Procurements.Many.CalculationQueue();
+            // Assert
+            ProcurementsAreEqual(expected, real);
+        }   
+        
+        [TestMethod]
+        public async Task GetProcurementsManyManagersQueue_ReturnsSameAsProcurementsManagersQueue()
+        {            
+            // Act
+            var expected = DatabaseLibrary.Queries.GET.View.ProcurementsManagersQueue();
+            var real = await DatabaseLibrary.Controllers.GET.Procurements.Many.ManagersQueue();
+            // Assert
+            ProcurementsAreEqual(expected, real);
+
+        }        
+        [TestMethod]
+        public async Task GetProcurementsManyByStateAndStartDate_PassSomeKinds_ReturnsSameAsProcurementsBy()
+        {
+            // Arrange
+            var testStates = new string[] { "Выигран 1ч", "Отклонен" };
+            var testDate = new DateTime(2024, 6, 15);
+
+            foreach (var testState in testStates)
+            {
+                // Act
+                var expected = DatabaseLibrary.Queries.GET.View.ProcurementsBy(testState, testDate);
+                var real = await DatabaseLibrary.Controllers.GET.Procurements.Many.ByStateAndStartDate(testState, testDate);
+                // Assert
+                ProcurementsAreEqual(expected, real);
+            }
         }
-
-
 
     }
 }
