@@ -15,8 +15,9 @@ namespace Tests
 
         void ProcurementsAreEqual(List<Procurement> lhs, List<Procurement> rhs)
         {
+            Debug.WriteLine($"lhs count: {lhs.Count} rhs count: {rhs.Count}");
             Assert.AreEqual(lhs.Count, rhs.Count, $"quantities are not equal: {lhs.Count} != {rhs.Count}");
-            for (int i = 0; i < lhs.Count; ++i) Assert.AreEqual(lhs[i].Id, rhs[i].Id, $"ids are not equal for index={i}");
+            for (int i = 0; i < lhs.Count; ++i) Assert.AreEqual(lhs[i].Id, rhs[i].Id);
         }
 
         [TestMethod]
@@ -74,9 +75,52 @@ namespace Tests
                 // Act
                 bool isOverdue = true;
                 var expected = DatabaseLibrary.Queries.GET.View.ProcurementsBy(kindName, isOverdue, kind);
-                // Assert
                 var real = await DatabaseLibrary.Controllers.GET.Procurements.Many.ByDateKind(kind, isOverdue, kindName);
+                // Assert
+                ProcurementsAreEqual(expected, real);
+            }
+        }        
+        
+        [TestMethod]
+        public async Task GetProcurementsManyAccepted_PassAllKindsAndTerms_ReturnsSameAsProcurementsBy()
+        {
+            bool isOverdue = true;
+            var expected = DatabaseLibrary.Queries.GET.View.ProcurementsBy(isOverdue);
+            var real = await DatabaseLibrary.Controllers.GET.Procurements.Many.Accepted(isOverdue);
+            ProcurementsAreEqual(expected, real);            
+            
+            isOverdue = false;
+            expected = DatabaseLibrary.Queries.GET.View.ProcurementsBy(isOverdue);
+            real = await DatabaseLibrary.Controllers.GET.Procurements.Many.Accepted(isOverdue);
+            ProcurementsAreEqual(expected, real);
+
+            expected = DatabaseLibrary.Queries.GET.View.ProcurementsNotPaid();
+            real = await DatabaseLibrary.Controllers.GET.Procurements.Many.Accepted();
+            ProcurementsAreEqual(expected, real);
+        }        
+        
+        [TestMethod]
+        public async Task GetProcurementsManyByVisa_PassAllKinds_ReturnsSameAsProcurementsBy()
+        {
+            // Arrange
+            var testCases = new List<(KindOf, bool)> {
+                (KindOf.Calculating, true),
+                (KindOf.Calculating, false),
+                (KindOf.Purchase, true),
+                (KindOf.Purchase, false)
+            };
+
+            foreach((var kind, var stageCompleted) in testCases)
+            {
+                // Act
+                var expected = DatabaseLibrary.Queries.GET.View.ProcurementsBy(stageCompleted, kind);
+                var real = await DatabaseLibrary.Controllers.GET.Procurements.Many.ByVisa(kind, stageCompleted);
+                // Assert
+                ProcurementsAreEqual(expected, real);
             }
         }
+
+
+
     }
 }
